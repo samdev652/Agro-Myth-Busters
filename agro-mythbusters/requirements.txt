@@ -1,0 +1,14 @@
+Django==4.2.7
+djangorestframework==3.14.0
+django-cors-headers==4.3.0
+dj-database-url==2.1.0
+python-dotenv==1.0.0
+drf-spectacular==0.26.3
+Pillow==10.1.0
+django-filter==23.5
+django-rest-auth==0.9.5
+django-allauth==0.58.2
+drf-jwt==1.19.2
+python-multipart==0.0.6
+gunicorn==21.2.0
+whitenoise==6.6.0
