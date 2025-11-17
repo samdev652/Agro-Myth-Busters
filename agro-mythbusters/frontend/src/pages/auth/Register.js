@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { register } from '../../services/authService';
-import { setCredentials } from '../../store/authSlice';
+import { loginUser } from '../../store/authSlice';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import {
@@ -24,10 +24,10 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading } = useSelector((state) => state.auth);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const initialValues = {
     email: '',
@@ -66,32 +66,25 @@ const Register = () => {
       return;
     }
 
+    setLoading(true);
     try {
-      const { password2, ...userData } = values;
-      const response = await register(userData);
+      await register(values);
       
       // Automatically log in the user after successful registration
-      dispatch(setCredentials(response));
+      await dispatch(loginUser({ email: values.email, password: values.password })).unwrap();
       navigate('/');
     } catch (error) {
-      if (error.response?.data) {
-        const { data } = error.response;
-        
-        // Handle field errors
-        Object.keys(data).forEach((field) => {
-          if (Array.isArray(data[field])) {
-            setFieldError(field, data[field][0]);
-          }
-        });
-
-        // Handle non-field errors
-        if (data.non_field_errors) {
-          setFieldError('nonFieldError', data.non_field_errors[0]);
-        }
+      if (error?.email) {
+        setFieldError('email', error.email[0]);
+      } else if (error?.password) {
+        setFieldError('password', error.password[0]);
+      } else if (error?.non_field_errors) {
+        setFieldError('nonFieldError', error.non_field_errors[0]);
       } else {
         setFieldError('nonFieldError', 'An error occurred during registration. Please try again.');
       }
     } finally {
+      setLoading(false);
       setSubmitting(false);
     }
   };
